@@ -601,5 +601,5 @@ background: whitesmoke;}
         </script>
     </apex:outputPanel>
    
-
+<!-- End of Calendar panel -->
 </apex:component>
