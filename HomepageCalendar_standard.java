@@ -1,0 +1,605 @@
+<apex:component controller="CalendarViewOfEventsAndTasksCntrlr" allowDML="true">
+
+    <apex:stylesheet value="https://code.jquery.com/ui/1.11.4/themes/flick/jquery-ui.css" />
+
+    <apex:stylesheet value="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.6.0/fullcalendar.min.css" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" />
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js" />
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.6.0/fullcalendar.min.js " />
+    <apex:includeScript value="https://malsup.github.io/jquery.blockUI.js" />
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"/>    <style>
+    .hiddenEvent {
+        display: none;
+    }
+    .dateFormat{
+    display:none;
+    }
+  
+    .ui-state-default .ui-icon {
+       // background-image: url("images/ui-icons_ffffff_256x240.png");
+    }
+    
+    body .bPageBlock, body #bodyCell .bResource .secondaryPalette, body .secondaryPalette.bPageBlock, body .individualPalette .secondaryPalette.bPageBlock, body .bodyDiv .genericTable, body .genericPageBlockTable, body .bodyDiv .bSubBlock, body .bComponentBlock .bPageBlock, body .bMyDashboard .bPageBlock, body.rlHoverFrame .bPageBlock, body.subjectSelectionPopup div.choicesBox, body.lookupTab .secondaryPalette.bPageBlock, body.popupTab .secondaryPalette.bPageBlock, body.UserTagStatsPage .secondaryPalette.bPageBlock {
+    background-color: white;
+    border: 0px;
+    }
+   body .bEditBlock .pbBottomButtons, body .apexp .bPageBlock.apexDefaultPageBlock .pbBottomButtons {
+   border-top:0px;
+    }
+    
+    .apexp .bPageBlock.apexDefaultPageBlock .pbHeader>table, #ep.bLayoutBlock .pbHeader>table {
+        border-bottom: 0px;
+        border-top: 0px;
+    }
+    
+    h2{
+     font-size:18px;
+     font-weight:normal;
+     color:grey;
+    }
+    .ui-state-default .ui-icon {
+      
+       
+    }
+    
+    
+.ui-widget-content{
+
+background: whitesmoke;}
+.panel-heading {
+    padding: 0px 12px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+.panel-primary {
+    border-color: lightgrey;
+}
+
+
+  
+    .panel-primary>.panel-heading {
+    color: #fff;
+    background-color: lightgrey;
+    border-color: grey;
+    }
+    
+    //keep the shape of the boxes we're hiding
+    .fc-other-month {
+        visibility: hidden
+    }
+    .fc-toolbar .fc-state-active, .fc-toolbar .ui-state-active{
+    background:#253271;
+    }
+    .fc-toolbar button {
+    position: relative;
+    background: #8FC24D;
+    color: white;
+    border-radius:5px;
+    }
+    
+    body button:hover, body .btn:hover, body .btnCancel:hover, body .menuButton .menuButtonButton:hover{
+    background:#253271;
+    }
+
+    .fc th {
+     padding:0px;
+     background:#8FC24D;
+     color:white;
+    }
+    </style>
+    <style>
+    #cal-options {
+        float: left;
+    }
+    
+    #cal-legend {
+        float: left;
+    }
+    
+    #cal-legend ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    #cal-legend ul li {
+        margin: 0;
+        padding: 5px;
+        float: left;
+    }
+    
+    #cal-legend ul li span {
+        display: block;
+        height: 16px;
+        width: 16px;
+        margin-right: 4px;
+        float: left;
+        border-radius: 4px;
+    }
+    
+    #calendar {
+        margin-top: 0px;
+    }
+    
+    #calendar a:hover {
+        color: #fff !important;
+    }
+    
+    .fc-event-inner {
+        padding: 3px;
+    }
+    td{
+    padding-left:10px;
+    }
+    
+    .event-birthday {
+        background: #56458c;
+        border-color: #56458c;
+    }
+    
+    .event-campaign {
+        background: #cc9933;
+        border-color: #cc9933;
+    }
+    
+    .event-personal {
+        background: #1797c0;
+        border-color: #1797c0;
+    }
+    .formcontrol1 {
+        display: block;
+        width: 95%;
+        height: 100%;
+        min-height: 34px;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #555;
+        font-weight: normal;
+        background-color: #E6E6E6;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    }
+    .btnedit{
+        background: white !important;
+        padding: 1px 5px!important;
+        color:#253271 !important;
+        border-radius:7px!important;
+     
+     }
+     .apexp .bPageBlock.apexDefaultPageBlock .pbBody{
+       position:fixed;
+     }
+    </style>
+   <apex:form id="filters" style="    padding-left: 2px;padding-right: 15px;">
+    <div class="row" style="padding-left:0px;padding-right:10px;">
+        <div class="col-md-3 col-sm-3 col-xs-12">
+            <div id="viewAs" class="left-radio-filter panel panel-primary">
+                <div class="filter-view-header panel-heading"><span id="view-header">View As</span></div>
+               
+                <!--Start-->
+                <div class="viewAs" id="Team_view">
+                <fieldset style="border: none;"><table role="presentation">
+                    <tbody><tr>
+                <td>
+                <input type="radio" checked="checked" title="Show My View" name="j_id0:j_id1:j_id2:filters:j_id14" id="j_id0:j_id1:j_id2:filters:j_id14:0" value="My View" onchange="reloadCal();"/><label for="j_id0:j_id1:j_id2:filters:j_id14:0"><i class="fa fa-user"></i></label></td>
+                <td>
+                <input type="radio" title="Show Team View" name="j_id0:j_id1:j_id2:filters:j_id14" id="j_id0:j_id1:j_id2:filters:j_id14:1" value="Team View" onchange="reloadCal();"/><label for="j_id0:j_id1:j_id2:filters:j_id14:1"><i class="fa fa-users"></i></label></td>
+                  
+            <div id="cal-legend">
+                <ul>
+                    <li>
+                        <apex:commandLink status="ajaxldr" action="{!ToggleCalendar}" reRender="clndrpnl,frm,rlde,fltrepeat" onmouseout="this.style.textDecoration='initial';this.style.color='#337ab7';" onmouseover="this.style.textDecoration='underline';" style="text-decoration: blink;font-weight: bold;" value="Events">
+                            <apex:param name="evnt" value="{!EvntSel}" assignTo="{!SelectedObj}" />
+                        </apex:commandLink>
+                        <span><i class="fa fa-th"></i></span></li>
+                    
+                    <li>
+                        <apex:commandLink status="ajaxldr" action="{!ToggleCalendar}" reRender="clndrpnl,frm,rlde,fltrepeat" onmouseout="this.style.textDecoration='initial';this.style.color='#337ab7';" onmouseover="this.style.textDecoration='underline';" style="text-decoration: blink;font-weight: bold;" value="Tasks">
+                            <apex:param name="evnt" value="{!TaskSel}" assignTo="{!SelectedObj}" />
+                        </apex:commandLink>
+                        <span><i class="fa fa-tasks"></i></span></li>
+                </ul>
+                <div style="clear:both;">
+                    <!--fix floats-->
+                </div>
+            </div> 
+                    </tr>
+</tbody></table></fieldset>
+                </div>
+                
+                <!--End-->
+            </div>
+        </div>
+        <!-- -->
+        <apex:outputpanel id="fltrepeat">
+            <div class="col-md-4 col-sm-4 col-xs-12" style="padding-right:0px;">
+                <div id="filter-multiselect" class="left-multi-filter panel panel-primary">
+                    <div class="panel-heading">
+                        <span>Filters</span>
+                    </div>
+                    <apex:repeat value="{!CalendarSettings}" var="filter">
+                        <div id="inputcheckbox" class="inputcheckbox" style="display: inline-block;">
+                            <label>
+                                <span style="text-align:right; margin-left:10px;cursor:pointer;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';this.style.color='black';">
+                
+                <input type="Checkbox" id="slideThree" onchange="reloadCal();" class="rectypefilter" name="fltr" value="{!filter.RecordTypeName__c}">{!filter.RecordTypeName__c}</input> 
+                
+                </span></label>
+                        </div>
+                    </apex:repeat>
+                </div>
+            </div>
+        </apex:outputpanel>
+    
+    </div>
+</apex:form>
+<!-- Calendar is rendered here by the fullcalendar Javascript -->
+<div class="row" style="width:100%;">
+<div class="col-md-7 col-sm-7 col-xs-12" style="padding-right:0px;">
+
+            <apex:outputPanel id="clndrpnl">
+                <div id='calendar' style="padding:0px;"/>
+            </apex:outputPanel>
+          </div>
+ <div class="col-md-5 col-sm-5 col-xs-12" style="padding-left:15px;">
+ <div class="row" style="padding-left:10px;width:100%;">
+          <apex:form id="frm">
+        <apex:outputpanel id="EditEvntOrTask">
+            <!-- Event Information PageBlock -->
+            <apex:pageBlock rendered="{!showevnt}">
+                <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Event Information</span>
+                </legend>
+                <br/>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" action="{!ToggleEditViewOfEvent}" title="Edit" reRender="frm,rlde" value="Edit" styleclass="btnedit" />
+                </div><br/>
+                <apex:pageblocksection columns="2" >
+                        <apex:outputField value="{!evt.Subject}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!evt.StartDateTime}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!evt.EndDateTime}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!evt.Type}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!evt.DurationInMinutes}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!evt.Description}" styleclass="formcontrol1" />
+                </apex:pageblocksection>
+            </apex:pageBlock>
+            <!--End of Event Information PageBlock -->
+            
+            <!--EDIT Event Information PageBlock -->
+            <apex:pageBlock rendered="{!ShowEditViewOfEvents}">
+                <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Edit Event Information</span>
+                </legend>
+                <br/>
+                <div align="center"><!-- Oncomplete="reloadevntsandtask();return false;"  -->
+                    <apex:commandButton status="ajaxldr" action="{!UpdateEvt}" title="Save" reRender="clndrpnl,frm,rlde" value="Save" styleclass="btnedit" />
+                    <apex:commandButton status="ajaxldr" Onclick="reloadCal();return false;"  styleclass="btnedit" title="Cancel" reRender="clndrpnl,frm,rlde" value="Cancel" />
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:inputField value="{!evt.Subject}" />
+                        <apex:inputField value="{!evt.StartDateTime}" />
+                        <apex:inputField value="{!evt.EndDateTime}" />
+                        <apex:inputField value="{!evt.Type}" />
+                        <apex:inputField value="{!evt.DurationInMinutes}" />
+                        <apex:inputField value="{!evt.Description}" />
+                </apex:pageblocksection>
+            </apex:pageBlock>
+            <!--End of EDIT Event Information PageBlock -->
+            
+            <!--Task Information PageBlock -->
+            <apex:pageBlock rendered="{!showtask}">
+               <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Task Information</span></legend>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" action="{!ToggleEditViewOfTasks}" styleclass="btnedit" title="Edit" reRender="frm,rlde" value="Edit" />
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:outputField value="{!tskobj.Subject}" />
+                        <apex:outputField value="{!tskobj.ActivityDate}" />
+                        <apex:outputField value="{!tskobj.Status}" />
+                        <apex:outputField value="{!tskobj.Priority}" />
+                        <apex:outputField value="{!tskobj.Type}" />
+                        <apex:outputField value="{!tskobj.Description}" />
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <!--END Of Task Information PageBlock -->
+            
+            <!-- EDIT Task Information PageBlock -->
+            <apex:pageBlock tabStyle="Task" rendered="{!ShowEditViewOfTasks}">
+               <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Edit Task Information</span>
+                </legend>
+                <br/>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" styleclass="btnedit" action="{!Updatetasks}" title="Save" reRender="clndrpnl,frm,rlde" value="Save" />
+                    <apex:commandButton status="ajaxldr" styleclass="btnedit" Onclick="reloadCal();return false;"  title="Cancel" reRender="clndrpnl,frm,rlde" value="Cancel" />
+                    <!-- action="{!CancelUpdate}" -->
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:inputField value="{!tskobj.Subject}" />
+                        <apex:inputField value="{!tskobj.ActivityDate}" />
+                        <apex:inputField value="{!tskobj.Status}" />
+                        <apex:inputField value="{!tskobj.Priority}" />
+                        <apex:inputField value="{!tskobj.Type}" />
+                        <apex:inputField value="{!tskobj.Description}" />
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <!--END of EDIT Task Information PageBlock -->
+            
+            
+            
+            
+            <!-- START Of Recently Modified Task -->
+            
+                        <apex:pageBlock rendered="{!ShowRecentTask}">
+               <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Recently Modified Task</span></legend>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" action="{!RecentlymodEditViewOfTasks}" styleclass="btnedit" title="Edit" reRender="frm,rlde" value="Edit" />
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:outputField value="{!RecentlyModTask.Subject}" />
+                        <apex:outputField value="{!RecentlyModTask.ActivityDate}" />
+                        <apex:outputField value="{!RecentlyModTask.Status}" />
+                        <apex:outputField value="{!RecentlyModTask.Priority}" />
+                        <apex:outputField value="{!RecentlyModTask.Type}" />
+                        <apex:outputField value="{!RecentlyModTask.Description}" />
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+
+            <!-- End Of Recently Modified Task -->
+            
+            <!-- Start of Edit View Of Recently Modified Task -->
+
+            <apex:pageBlock tabStyle="Task" rendered="{!ShowRecentTaskEdit}">
+               <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Edit Task Information</span>
+                </legend>
+                <br/>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" styleclass="btnedit" action="{!UpdateRecentModtasks}" title="Save" reRender="clndrpnl,frm,rlde" value="Save" />
+                    <apex:commandButton status="ajaxldr" styleclass="btnedit" Onclick="reloadCal();return false;"  title="Cancel" reRender="clndrpnl,frm,rlde" value="Cancel" />
+                    <!-- action="{!CancelUpdate}" -->
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:inputField value="{!RecentlyModTask.Subject}" />
+                        <apex:inputField value="{!RecentlyModTask.ActivityDate}" />
+                        <apex:inputField value="{!RecentlyModTask.Status}" />
+                        <apex:inputField value="{!RecentlyModTask.Priority}" />
+                        <apex:inputField value="{!RecentlyModTask.Type}" />
+                        <apex:inputField value="{!RecentlyModTask.Description}" />
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <!-- End Of Recently Modified Task -->
+            
+                        <!-- Start Of Recently Modified Event-->
+            <apex:pageBlock rendered="{!ShowRecentEvent}">
+                <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Recently Modified Event</span>
+                </legend>
+                <br/>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" action="{!RecentlymodEditViewOfEvents}" title="Edit" reRender="frm,rlde" value="Edit" styleclass="btnedit" />
+                </div><br/>
+                <apex:pageblocksection columns="2" >
+                        <apex:outputField value="{!RecentlyModEvent.Subject}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!RecentlyModEvent.StartDateTime}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!RecentlyModEvent.EndDateTime}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!RecentlyModEvent.Type}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!RecentlyModEvent.DurationInMinutes}" styleclass="formcontrol1" />
+                        <apex:outputField value="{!RecentlyModEvent.Description}" styleclass="formcontrol1" />
+                </apex:pageblocksection>
+            </apex:pageBlock>
+            <!--End Of Recently Modified Event  -->
+            
+            <!--Start of Edit View Of Recently Modified Event -->
+            <apex:pageBlock rendered="{!ShowRecentEventEdit}">
+                <!-- <apex:pageMessages /> -->
+                <legend style="color:white;font-weight:150;padding-left:8px;margin-top: -88px;margin-bottom:0px;font-size:16px;border-radius:4px;background:lightgrey;"><span style="padding-left:6px;">Edit Event Information</span>
+                </legend>
+                <br/>
+                <div align="center">
+                    <apex:commandButton status="ajaxldr" action="{!UpdateRecentModEvt}" title="Save" reRender="clndrpnl,frm,rlde" value="Save" styleclass="btnedit" />
+                    <apex:commandButton status="ajaxldr" Onclick="reloadCal();return false;"  styleclass="btnedit" title="Cancel" reRender="clndrpnl,frm,rlde" value="Cancel" />
+                </div><br/>
+                <apex:pageblocksection columns="2">
+                        <apex:inputField value="{!RecentlyModEvent.Subject}" />
+                        <apex:inputField value="{!RecentlyModEvent.StartDateTime}" />
+                        <apex:inputField value="{!RecentlyModEvent.EndDateTime}" />
+                        <apex:inputField value="{!RecentlyModEvent.Type}" />
+                        <apex:inputField value="{!RecentlyModEvent.DurationInMinutes}" />
+                        <apex:inputField value="{!RecentlyModEvent.Description}" />
+                </apex:pageblocksection>
+            </apex:pageBlock>
+            <!--End of Edit View Of Recently Modified Event -->
+            
+            
+            
+            
+            
+            
+        </apex:outputpanel>
+    
+    <apex:actionFunction status="ajaxldr" name="fetchevent" action="{!editevent}" reRender="frm">
+        <apex:param value="" name="evntid" />
+        <apex:param value="" name="sfobj" />
+    </apex:actionFunction>
+    <apex:actionFunction status="ajaxldr" name="filterallevents" action="{!filterevents}" reRender="clndrpnl,frm,rlde,">
+        <apex:param value="" name="filterby" />
+        <apex:param value="" name="changedview" assignto="{!viewtype}" />
+    </apex:actionFunction>
+    <apex:actionStatus id="ajaxldr" onstart="blockoverlay();" onstop="$.unblockUI();" />
+</apex:form>
+</div>
+<br/>
+<br/>
+<br/><br/>
+<div class="row" style="padding-left:15px;">
+                
+                                    </div>
+</div>
+            
+</div>
+
+
+
+
+
+    <!-- Fullcalendar configuration plus event data supplied by controller -->
+    <script type="text/javascript" language="javascript">
+
+    $(document).ready(function() {
+//console.log('--all events-- ' + '{!Events}');
+           
+        locadclnr();
+       
+
+      
+
+    });
+
+
+    
+    function changeview(selectedrad){
+    
+    //alert('---Selected----'+selectedrad.value);
+    
+ $("input:radio").each(function () {
+
+    
+    var $this = $(this);
+
+    
+    if (this.checked) {
+        var src = this.value;
+        //alert(this.value);
+        
+    }
+
+})
+    
+    
+    
+    }
+    
+    function reloadCal() {
+        
+        var selectedItems = [];
+        var check = document.getElementsByName("fltr");
+        var fltrstring = '';
+        for (var i=0; i<check.length; i++) 
+         {
+           
+           if(check[i].checked==true){
+            selectedItems.push(check[i].value);
+            fltrstring = fltrstring+check[i].value+',';
+        }
+        }
+        var myval='';
+        $("input:radio").each(function () {
+
+    
+    var $this = $(this);
+
+    
+    if (this.checked) {
+        myval = this.value;
+        //alert(myval);
+        
+    }
+
+})
+        
+        console.log(selectedItems);
+        console.log('--fltrstring--'+fltrstring );
+        filterallevents(fltrstring,myval);
+
+    }
+    
+            function blockoverlay(){
+            $.blockUI({ css: { 
+            border: 'none', 
+            padding: '2px', 
+            backgroundColor: '#000', 
+            '-webkit-border-radius': '10px', 
+            '-moz-border-radius': '10px', 
+            opacity: .5, 
+            color: '#fff' 
+        } });      
+        }
+        
+        
+        function reloadevntsandtask(){
+        console.log('HelloAnil');
+        console.log('-Is nOt Updated from Comp--'+'{!IsNotUpdated}');
+        var localvar = '{!IsNotUpdated}';
+        if(localvar=='false'){
+        console.log('-Is Within the false --'+'{!IsNotUpdated}');
+        reloadCal();
+        }
+        else {
+        return false;
+        }
+        
+        }
+
+
+    </script>
+    <apex:outputPanel id="rlde">
+        <script type="text/javascript" language="javascript">
+        function locadclnr() {
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'month,agendaWeek,agendaDay',
+                    center: 'title',
+                    right: 'prevYear prev,today,next nextYear'
+                },
+                defaultView: 'month',
+                allDaySlot:true,
+                eventLimit: true,
+                theme: true,
+                events: {!Events},
+                eventRender: function(event, element) {
+                    element.attr('href', 'javascript:void(0);');
+                    element.click(function() {
+
+                        
+                        fetchevent(event.url,event.sobj);
+  
+                        console.log(event.url);
+                       
+                        
+                        
+
+                    });
+                    
+            
+
+                    
+                },
+              
+    
+            }); 
+
+
+        //console.log('-Event list In locadclnr--Func-- '+'{!Events}');
+        }
+
+        locadclnr();
+        </script>
+    </apex:outputPanel>
+   
+
+</apex:component>
